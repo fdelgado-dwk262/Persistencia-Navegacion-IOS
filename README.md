@@ -18,6 +18,13 @@ No acceder al fochero directamente para salvaguardar la integridad ade la app
 
 Tener cuidado para no ahcer un fingerprinting para no tener problemas (Ç con aple , justicia etc... )
 
+// otras persstencias
+    // https://developer.apple.com/documentation/swiftdata
+    
+    // datos de app online / cache de ddatos temporales ...
+    // https://developer.apple.com/documentation/coredata
+
+
 ----------------------------
 
 ## Ojo son datos no sensibles si se quiere guardado de otros datos sensibles otro sistema
