@@ -22,7 +22,7 @@ extension String {
     static let ultimoLogin = "último acceso"
 }
 
-struct ContentView: View {
+struct PersistirDatosSimples: View {
 
     // definimos una persistencia
     // si exiten los datos los ignora a no ser,
@@ -153,5 +153,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    PersistirDatosSimples()
 }

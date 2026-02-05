@@ -11,7 +11,9 @@ import SwiftUI
 struct Persistencia_Navegacion_IOSApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            //            PersistirDatosSimples()
+            //            PersistenciaJSON()
+            PersistenciaJSONAvanzado()
         }
     }
 }
