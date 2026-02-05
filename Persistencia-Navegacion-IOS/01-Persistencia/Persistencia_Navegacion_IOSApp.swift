@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@main
+//@main
 struct Persistencia_Navegacion_IOSApp: App {
     var body: some Scene {
         WindowGroup {
