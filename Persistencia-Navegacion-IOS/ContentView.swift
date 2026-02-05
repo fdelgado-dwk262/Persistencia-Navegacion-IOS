@@ -44,6 +44,7 @@ struct ContentView: View {
         default: return .white
         }
     }
+    
     // se puede implementar un array
     // pero lo idela es simplicar para pdoer acceder de forma fmás fácil
 
@@ -59,9 +60,10 @@ struct ContentView: View {
 
     var body: some View {
         Form {
-            Section("Datos de usuario - persistentes en el dispositivo -") {
-                TextField("Tu nopmbre", text: $nombreUsuario)
-                Toggle("Musica activada", isOn: $musicaActiva)
+            Section("Datos de usuario \n -persistencia en dispositivo-") {
+                TextField("Tu nopmbre", text: $nombreUsuario).foregroundStyle(.black)
+                Toggle("Musica activada", isOn: $musicaActiva).foregroundStyle(.black)
+                
                 // Usamos un Picker sencillo o puedes mantener el ColorPicker
                 // si conviertes el color a RawData (pero es más complejo).
                 Picker("Color del fondo", selection: $colorSeleccionado) {
@@ -69,19 +71,22 @@ struct ContentView: View {
                     Text("Rojo").tag("Red")
                     Text("Azul").tag("Blue")
                     Text("Verde").tag("Green")
-                }
+                }.foregroundStyle(.black)
             }
+            .foregroundStyle(colorSeleccionado != "White" ? .white : .black)
+            
             Section("Hora de acceso/registro") {
-                Text("Último acceso: \(ultimaFechaLogin)")
+                Text("Último acceso: \(ultimaFechaLogin)").foregroundStyle(.black)
 
                 Button("Guardado fecha de login") {
                     guardadoFechaLogin()
-                }
+                }.foregroundStyle(.black)
                 Button("Borrado fecha de login") {
                     borradoFechaLogin()
-                }
+                }.foregroundStyle(.black)
 
-            }
+            } .foregroundStyle(colorSeleccionado != "White" ? .white : .black)
+            
             
             // Ejemplo de poder poner botones a la derecha del titulo
             Section {
@@ -98,14 +103,15 @@ struct ContentView: View {
                         Button(action: { print("Botón 1") }) {
                             Image(systemName: "gear")
                         }
+                        .foregroundStyle(colorSeleccionado != "White" ? .white : .black)
                         
                         Button(action: { print("Botón 2") }) {
                             Image(systemName: "plus")
-                        }
-                    }
+                        }.foregroundStyle(colorSeleccionado != "White" ? .white : .black)
+                    }.foregroundStyle(.black)
                     .textCase(nil) // Evita que los botones se pongan en mayúsculas automáticamente
                 }
-            }
+            } .foregroundStyle(colorSeleccionado != "White" ? .white : .black)
 
         }
         .scrollContentBackground(.hidden)
