@@ -14,6 +14,16 @@ enum Destino: Hashable {
     case ajustes
 }
 
+//@main
+struct MainNavegacion: App {
+    var body: some Scene {
+        WindowGroup {
+          VistaPrincipal()
+        }
+    }
+}
+
+
 // Enrutador observable
 @Observable
 class Router {
@@ -39,7 +49,7 @@ class Router {
 
 }
 
-struct VistaPrincipal: View {
+fileprivate struct VistaPrincipal: View {
 
     @Environment(Router.self) private var router
 

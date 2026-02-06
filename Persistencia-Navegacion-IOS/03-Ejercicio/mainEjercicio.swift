@@ -27,7 +27,7 @@
 import SwiftUI
 import Observation
 
-@main
+//@main
 struct MainEjercicio: App {
     var body: some Scene {
         WindowGroup {
