@@ -109,10 +109,14 @@ struct VistaPago: View {
 }
 
 struct VistaConfirmacion: View {
+    @Environment(RouterCompra.self) private var router
     var id: Int
     var total: Double
     var body: some View {
         Text("Estamos en la confirmación del pago")
+        Button("Reintentar") {
+            router.popToRoot()
+        }
     }
 }
 
