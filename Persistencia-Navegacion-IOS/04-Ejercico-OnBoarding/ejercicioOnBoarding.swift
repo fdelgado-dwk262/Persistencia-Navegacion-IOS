@@ -20,7 +20,8 @@ struct Item: Identifiable, Codable {
 }
 
 // gestionara el estado de toda la app
-
+// MARK: Obs.- AppManager
+// -----------------------------------------
 @Observable
 class AppManager {
 
@@ -31,9 +32,9 @@ class AppManager {
         case auth  // alta o login
         case principal  // pantalla principal
     }
-    
+
     // estado de la app 4 variables :
-    
+
     var items: [Item] = []
     var usuarioActual: Usuario?
     var haVistoOnboarding: Bool = false
@@ -65,6 +66,16 @@ class AppManager {
         {
             self.usuarioActual = usuario
         }
+
+        // cargar los tiems
+        if let data = UserDefaults.standard.data(forKey: claveItems),
+            let itemGuardados = try? JSONDecoder().decode(
+                [Item].self,
+                from: data
+            )
+        {
+            items = itemGuardados
+        }
     }
 
     // metodo de finalizacion del onboarding
@@ -83,25 +94,40 @@ class AppManager {
         // si hay usuario lo sobreescribe esto no es real ni se esta haciendo comprobaciones
         if let data = try? JSONEncoder().encode(nuevoUario) {
             UserDefaults.standard.set(data, forKey: claveUsuario)
-        }
+        }   
 
     }
+
+    //Para cerrar sesión
+    // en un entorno de producción borramos el token
+    // y eliminamos el token del dispositivo
+    func cerrarSesion() {
+        usuarioActual = nil
+        UserDefaults.standard.removeObject(forKey: claveUsuario)
+    }
     
+    // birrar la cuenta
+    func borrarCuenta() {
+        borrarItem()
+        UserDefaults.standard.removeObject(forKey: claveItems)
+        cerrarSesion()
+    }
+
     // para añadir item
     func anadirItem(titulo: String) {
         let nuevoItem = Item(titulo: titulo)
         items.append(nuevoItem)
-        
+
         // llamaos a la funcioonn para la presistencia
         persistirItems()
     }
-    
+
     // para borrar totos los items
     func borrarItem() {
         items.removeAll()
         persistirItems()
     }
- 
+
     private func persistirItems() {
         if let data = try? JSONEncoder().encode(items) {
             UserDefaults.standard.set(data, forKey: claveItems)
@@ -112,6 +138,8 @@ class AppManager {
 }
 
 // esto es lo que sirve en produccion e instalacion
+// MARK: Main
+// -----------------------------------------
 @main
 struct AppOnBoarding: App {
     @State private var manager = AppManager()
@@ -123,6 +151,8 @@ struct AppOnBoarding: App {
     }
 }
 
+// MARK: SelectorDeVista
+// -----------------------------------------
 struct SelectorDeVista: View {
     @Environment(AppManager.self) var manager
 
@@ -143,16 +173,70 @@ struct SelectorDeVista: View {
     }
 }
 
+// MARK: VistaPrincipal
 // -----------------------------------------
 private struct VistaPrincipal: View {
-    
+
     @Environment(AppManager.self) var manager
-    
+    @State private var nuevoItemText = ""
+
     var body: some View {
-        Text("hola ")
+        NavigationStack {
+
+            List {
+                Section("Añadir") {
+                    HStack {
+
+                        TextField("Nuevo Articulo", text: $nuevoItemText)
+
+                        Button {
+                            // si el texto esta vacios o no
+                            guard !nuevoItemText.isEmpty else { return }
+                            manager.anadirItem(titulo: nuevoItemText)
+                            nuevoItemText = ""
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                        }
+                    }
+                }
+                Section("Mis articulos") {
+                    if manager.items.isEmpty {
+                        Text("No hay Items guardados")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(manager.items) { item in
+                            HStack {
+                                Text(item.titulo)
+                                Spacer()
+                                Text(item.fechaAnadido, style: .time)
+                                    .font(.caption)
+                                    .foregroundStyle(.gray)
+                            }
+                        }
+                    }
+                }
+            }
+
+            .navigationTitle("Hola \(manager.usuarioActual?.nombreUsusario ?? "Anónimo")")
+            // desde aqui llamaremos a ajustes
+            .toolbar {
+                // solo uno de configuracion para hacer varias cosas
+                // ver tutorial
+                // borrar articuloes
+                // cerrar sesion
+                // borrar su cuenta
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(destination: VistaSeting()) {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+
+        }
     }
 }
 
+// MARK: VistaOnboarding
 // -----------------------------------------
 private struct VistaOnboarding: View {
 
@@ -227,6 +311,7 @@ private struct VistaOnboarding: View {
     }
 }
 
+// MARK: VistaAuth
 // -----------------------------------------
 private struct VistaAuth: View {
 
@@ -284,13 +369,63 @@ private struct VistaAuth: View {
         .padding()
     }
 }
+
+// MARK: VistaSeting
+// -----------------------------------------
+struct VistaSeting: View {
+
+    @Environment(AppManager.self) var manager
+
+    @State private var mostrarOnboarding = false
+
+    var body: some View {
+        Form {
+            Section("General") {
+                Button("Ver onbording de nuevo") {
+                    mostrarOnboarding = true
+                }
+            }
+            Section("Gestión") {
+                Button("borrar todos los artículos", role: .destructive) {
+                    manager.borrarItem()
+                }
+                .disabled(manager.items.isEmpty)
+
+                Button("Cerrar sesión") {
+                    manager.cerrarSesion()
+                }
+
+                Button("Eliminar cuenta") {
+                    manager.borrarCuenta()
+                }
+
+                
+            }
+        }
+        .navigationTitle(Text("Configuración"))
+        .sheet(isPresented: $mostrarOnboarding) {
+            ZStack(alignment: .topTrailing) {
+                VistaOnboarding()
+                Button {
+                    mostrarOnboarding = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.largeTitle)
+                        .foregroundStyle(.white)
+                        .padding()
+                }
+            }
+        }
+    }
+}
+
 // -----------------------------------------
 // MARK: Previews
 // -----------------------------------------
 // truco de pruebas para saltar pasos
 // solo a nivel de pruebas de xcode no debe de ir al dispositivo
 // jamas en producción es solo para el canvas
-#Preview("1. Onboiardig") {
+#Preview("1. Onboarding") {
     let manager = AppManager()
     manager.haVistoOnboarding = false
     manager.usuarioActual = nil
@@ -311,11 +446,34 @@ private struct VistaAuth: View {
 
 // ya entrando en la app
 
-#Preview("3. En la app") {
+#Preview("3. En la app PAGINA PRINCIPAL") {
     let manager = AppManager()
     manager.haVistoOnboarding = true
-    manager.usuarioActual = Usuario(nombreUsusario: "peptide", password: "sdfsdfsdf")
+    manager.usuarioActual = Usuario(
+        nombreUsusario: "peptide",
+        password: "sdfsdfsdf"
+    )
+    // Podemos provar en el canvas con datos
+    //    manager.items = [
+    //        Item(titulo: "producto 01"),
+    //        Item(titulo: "producto 02"),
+    //
+    //    ]
 
     return VistaPrincipal()
         .environment(manager)
+}
+
+#Preview("4. Configuración") {
+    let manager = AppManager()
+    manager.usuarioActual = Usuario(
+        nombreUsusario: "usuarioCong",
+        password: "sdsd"
+    )
+
+    return NavigationStack {
+        VistaSeting()
+            .environment(manager)
+    }
+
 }
